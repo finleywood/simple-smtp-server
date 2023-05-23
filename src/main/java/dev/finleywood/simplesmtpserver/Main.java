@@ -6,7 +6,8 @@ import java.util.ArrayList;
 
 public class Main {
 
-    private static int port;
+    public static int port;
+    public static String hostname;
 
     private static Logger logger = new Logger(Main.class);
 
@@ -17,7 +18,8 @@ public class Main {
             throw new RuntimeException("No arguments provided, a port number is needed!");
         }
         try {
-            port = Integer.parseInt(args[0]);
+            port = Integer.parseInt(args[1]);
+            hostname = args[0];
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -36,7 +38,7 @@ public class Main {
                     client = ss.accept();
                     new Thread(new ClientHandler(client)).start();
                 } catch (Exception e) {
-                    logger.error("Error accpting connection from client, error: " + e);
+                    logger.error("Error accepting connection from client, error: " + e);
                     e.printStackTrace();
                 }
             }

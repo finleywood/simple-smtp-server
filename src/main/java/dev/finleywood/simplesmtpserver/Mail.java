@@ -3,12 +3,17 @@ package dev.finleywood.simplesmtpserver;
 public class Mail {
     private String from;
     private String to;
+    private String incomingHostName;
     private String message = "";
 
-    public Mail(String from, String to, String message) {
+    private boolean outgoing = true;
+
+    public Mail(String from, String to, String incomingHostName, String message, boolean outgoing) {
         this.from = from;
         this.to = to;
+        this.incomingHostName = incomingHostName;
         this.message = message;
+        this.outgoing = outgoing;
     }
 
     public Mail() {
@@ -42,4 +47,19 @@ public class Mail {
         this.message += (line + '\n');
     }
 
+    public boolean isOutgoing() {
+        return outgoing;
+    }
+
+    public void setOutgoing(boolean outgoing) {
+        this.outgoing = outgoing;
+    }
+
+    public String getIncomingHostName() {
+        return incomingHostName;
+    }
+
+    public void setIncomingHostName(String incomingHostName) {
+        this.incomingHostName = incomingHostName;
+    }
 }

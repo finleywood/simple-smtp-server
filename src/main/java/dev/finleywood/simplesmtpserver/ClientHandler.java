@@ -30,6 +30,7 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
+        this.sendMessage(Protocol.READY);
         try(client; out; in) {
             try {
                 String message;
@@ -53,10 +54,12 @@ public class ClientHandler implements Runnable {
     private void processMessage(String message) throws Exception {
         String[] commandAndArgs = message.split(" ");
         if(message.contains(Protocol.MAIL_FROM) || message.contains(Protocol.RCP_TO)) {
-            commandAndArgs = new String[] {commandAndArgs[0] + " " + commandAndArgs[1], commandAndArgs[2]};
+            String[] fromAndEmail = commandAndArgs[1].split(":");
+            String emailSubStr = fromAndEmail[1].substring(1,fromAndEmail[1].length()-1);
+            commandAndArgs = new String[] {commandAndArgs[0] + " " + fromAndEmail[0] + ":", emailSubStr};
         }
         switch (commandAndArgs[0]) {
-            case Protocol.HELO -> this.helo();
+            case Protocol.HELO -> this.helo(commandAndArgs);
             case Protocol.MAIL_FROM -> this.mailFrom(commandAndArgs[1]);
             case Protocol.RCP_TO -> this.rcpTo(commandAndArgs[1]);
             case Protocol.DATA -> this.data();
@@ -68,9 +71,13 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void helo() {
+    private void helo(String[] commandAndArgs) {
         if(this.currentMail == null) {
             this.currentMail = new Mail();
+            if(commandAndArgs.length > 1) {
+                this.currentMail.setOutgoing(false);
+                this.currentMail.setIncomingHostName(commandAndArgs[1]);
+            }
             this.sendMessage(Protocol.OK);
         } else {
             this.sendMessage(Protocol.BAD_SEQUENCE_OF_COMMADS);
@@ -119,6 +126,10 @@ public class ClientHandler implements Runnable {
     private void quit() throws GracefulQuitException {
         if(this.currentMail != null) {
             Main.mailStore.add(this.currentMail);
+            logger.info("New " + (this.currentMail.isOutgoing() ? "outgoing" : "incoming") + " mail");
+            if(!this.currentMail.isOutgoing()) {
+                logger.info("Received From Host: " + this.currentMail.getIncomingHostName());
+            }
             logger.info("Mail received from " + this.currentMail.getFrom() + ", to " + this.currentMail.getTo());
             logger.info("Message Contents: " + this.currentMail.getMessage());
         }
