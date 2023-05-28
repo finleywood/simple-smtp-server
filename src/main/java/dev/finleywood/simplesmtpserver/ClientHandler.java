@@ -126,14 +126,15 @@ public class ClientHandler implements Runnable {
     private void quit() throws GracefulQuitException {
         if(this.currentMail != null) {
             Main.mailStore.add(this.currentMail);
-            logger.info("New " + (this.currentMail.isOutgoing() ? "outgoing" : "incoming") + " mail");
+            logger.info("New " + (this.currentMail.isOutgoing() ? "outgoing" : "incoming") + " mail, with UUID " + this.currentMail.getUuid());
             if(!this.currentMail.isOutgoing()) {
                 logger.info("Received From Host: " + this.currentMail.getIncomingHostName());
             }
             logger.info("Mail received from " + this.currentMail.getFrom() + ", to " + this.currentMail.getTo());
             logger.info("Message Contents: " + this.currentMail.getMessage());
+            this.currentMail.store();
+            this.currentMail = null;
         }
-        this.currentMail = null;
         this.sendMessage(Protocol.QUIT_ACK);
         throw new GracefulQuitException("QUIT Received!");
     }
